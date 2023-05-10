@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "lessor.fullname" . }}
+  labels:
+    {{- include "lessor.labels" . | nindent 4 }}
+data:
+  caddy.json: |
+    {
+      "logging": {
+        "logs": {
+          "default": {
+            "exclude": [
+              "http.log.access.log0"
+            ]
+          },
+          "log0": {
+            "writer": {
+              "output": "stdout"
+            },
+            "encoder": {
+              "format": "console"
+            },
+            "include": [
+              "http.log.access.log0"
+            ]
+          }
+        }
+      },
+      "apps": {
+        "http": {
+          "servers": {
+            "srv0": {
+              "automatic_https": {
+                "disable": true
+              },
+              "listen": [
+                ":8080"
+              ],
+              "routes": [
+                {
+                  "handle": [
+                    {
+                      "handler": "subroute",
+                      "routes": [
+                        {
+                          "handle": [
+                            {
+                              "handler": "lessor"
+                            },
+                            {
+                              "handler": "reverse_proxy",
+                              "upstreams": [
+                                {
+                                  "dial": "{{ .Values.loki.url }}:80"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ],
+                  "terminal": true
+                }
+              ],
+              "logs": {
+                "logger_names": {
+                  "localhost:8080": "log0"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
