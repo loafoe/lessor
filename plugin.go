@@ -106,7 +106,7 @@ func (m *Middleware) injectScopeHeader(r *http.Request) error {
 
 	_, err := verifier.Verify(context.Background(), tokenString)
 	if err != nil {
-		m.logger.Error("failed to validate token", zap.String("token", tokenString), zap.Int("len", len(tokenString))) // TODO: remove after this works
+		m.logger.Error("failed to validate token", zap.Error(err), zap.String("token", tokenString), zap.Int("len", len(tokenString))) // TODO: remove after this works
 		return fmt.Errorf("token verification failed: %w", err)
 	}
 
