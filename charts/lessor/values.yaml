@@ -5,6 +5,8 @@
 loki:
   url: loki-gateway.observability.svc
 
+issuer: "https://dex.hsp.hostedzonehere.com"
+
 replicaCount: 1
 
 image:

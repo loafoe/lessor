@@ -46,7 +46,8 @@ data:
                         {
                           "handle": [
                             {
-                              "handler": "lessor"
+                              "handler": "lessor",
+                              "issuer": "{{ .Values.issuer }}"
                             },
                             {
                               "handler": "reverse_proxy",

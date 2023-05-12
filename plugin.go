@@ -9,6 +9,7 @@ import (
 	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/golang-jwt/jwt/v5"
+	"go.uber.org/zap"
 	"net/http"
 	"strings"
 
@@ -17,7 +18,8 @@ import (
 
 type Middleware struct {
 	Issuer   string
-	Provider *oidc.Provider
+	provider *oidc.Provider
+	logger   *zap.Logger
 }
 
 // CaddyModule returns the Caddy module information.
@@ -35,12 +37,14 @@ func init() {
 
 // Provision implements caddy.Provisioner.
 func (m *Middleware) Provision(ctx caddy.Context) error {
+	m.logger = ctx.Logger() // g.logger is a *zap.Logger
 	provider, err := oidc.NewProvider(ctx, m.Issuer)
 	if err != nil {
+		m.logger.Error("error provisioning issuer", zap.String("issuer", m.Issuer), zap.Error(err))
 		return fmt.Errorf("erorr provisioning issuer '%s': %w", m.Issuer, err)
 		// handle error
 	}
-	m.Provider = provider
+	m.provider = provider
 	return nil
 }
 
@@ -51,7 +55,7 @@ func (m *Middleware) Validate() error {
 
 // ServeHTTP implements caddyhttp.MiddlewareHandler.
 func (m *Middleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next caddyhttp.Handler) error {
-	err := m.InjectScopeHeader(r)
+	err := m.injectScopeHeader(r)
 	if err != nil {
 		return err
 	}
@@ -90,14 +94,15 @@ func (m *Middleware) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 	return nil
 }
 
-func (m *Middleware) InjectScopeHeader(r *http.Request) error {
+func (m *Middleware) injectScopeHeader(r *http.Request) error {
 	// Extract tenants and inject them into X-Scope-OrgID header
 	tokenString := r.Header.Get("X-Id-Token")
 
-	verifier := m.Provider.Verifier(&oidc.Config{})
+	verifier := m.provider.Verifier(&oidc.Config{})
 
 	_, err := verifier.Verify(context.Background(), tokenString)
 	if err != nil {
+		m.logger.Error("failed to validate token", zap.String("token", tokenString)) // TODO: remove after this works
 		return fmt.Errorf("token verification failed: %w", err)
 	}
 
@@ -110,16 +115,21 @@ func (m *Middleware) InjectScopeHeader(r *http.Request) error {
 		return []byte(""), nil
 	})
 	if !errors.Is(err, jwt.ErrTokenUnverifiable) {
+		m.logger.Error("token parsing error", zap.Error(err))
 		return fmt.Errorf("token parsing error: %w", err)
 	}
 	// Verified
 	claims, ok := token.Claims.(*DexClaims)
 	if !ok {
+		m.logger.Error("invalid claims detected", zap.Error(err))
 		return fmt.Errorf("invalid claims detected: %w", err)
 	}
 	if len(claims.LogReaders) > 0 {
-		r.Header.Set("X-Scope-OrgID", strings.Join(claims.LogReaders, "|"))
+		tenants := strings.Join(claims.LogReaders, "|")
+		m.logger.Info("settings X-Scope-OrgID", zap.String("tenants", tenants))
+		r.Header.Set("X-Scope-OrgID", tenants)
 	} else {
+		m.logger.Info("setting X-Scope-OrgID to fallback to fake tenant")
 		r.Header.Set("X-Scope-OrgID", "fake") // Default to fake
 	}
 	return nil
