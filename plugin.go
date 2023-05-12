@@ -102,7 +102,9 @@ func (m *Middleware) injectScopeHeader(r *http.Request) error {
 		return nil
 	}
 
-	verifier := m.provider.Verifier(&oidc.Config{})
+	verifier := m.provider.Verifier(&oidc.Config{
+		SkipClientIDCheck: true,
+	})
 
 	_, err := verifier.Verify(context.Background(), tokenString)
 	if err != nil {
