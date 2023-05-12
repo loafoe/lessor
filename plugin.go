@@ -98,7 +98,7 @@ func (m *Middleware) injectScopeHeader(r *http.Request) error {
 	// Extract tenants and inject them into X-Scope-OrgID header
 	tokenString := r.Header.Get("X-Id-Token")
 
-	if tokenString == "" { // Skip
+	if len(tokenString) == 0 { // Skip
 		return nil
 	}
 
@@ -106,7 +106,7 @@ func (m *Middleware) injectScopeHeader(r *http.Request) error {
 
 	_, err := verifier.Verify(context.Background(), tokenString)
 	if err != nil {
-		m.logger.Error("failed to validate token", zap.String("token", tokenString)) // TODO: remove after this works
+		m.logger.Error("failed to validate token", zap.String("token", tokenString), zap.Int("len", len(tokenString))) // TODO: remove after this works
 		return fmt.Errorf("token verification failed: %w", err)
 	}
 
