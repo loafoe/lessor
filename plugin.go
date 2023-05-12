@@ -98,6 +98,10 @@ func (m *Middleware) injectScopeHeader(r *http.Request) error {
 	// Extract tenants and inject them into X-Scope-OrgID header
 	tokenString := r.Header.Get("X-Id-Token")
 
+	if tokenString == "" { // Skip
+		return nil
+	}
+
 	verifier := m.provider.Verifier(&oidc.Config{})
 
 	_, err := verifier.Verify(context.Background(), tokenString)
