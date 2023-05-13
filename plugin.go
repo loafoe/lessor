@@ -108,7 +108,7 @@ func (m *Middleware) injectScopeHeader(r *http.Request) error {
 
 	_, err := verifier.Verify(context.Background(), tokenString)
 	if err != nil {
-		m.logger.Error("failed to validate token", zap.Error(err), zap.String("token", tokenString), zap.Int("len", len(tokenString))) // TODO: remove after this works
+		m.logger.Error("failed to validate token", zap.Error(err), zap.Int("len", len(tokenString)))
 		return fmt.Errorf("token verification failed: %w", err)
 	}
 
@@ -132,10 +132,10 @@ func (m *Middleware) injectScopeHeader(r *http.Request) error {
 	}
 	if len(claims.LogReaders) > 0 {
 		tenants := strings.Join(claims.LogReaders, "|")
-		m.logger.Info("settings X-Scope-OrgID", zap.String("tenants", tenants))
+		m.logger.Info("setting X-Scope-OrgID to tenants found in claim", zap.String("tenants", tenants))
 		r.Header.Set("X-Scope-OrgID", tenants)
 	} else {
-		m.logger.Info("setting X-Scope-OrgID to fallback to fake tenant")
+		m.logger.Info("setting X-Scope-OrgID to fallback fake tenant")
 		r.Header.Set("X-Scope-OrgID", "fake") // Default to fake
 	}
 	return nil
