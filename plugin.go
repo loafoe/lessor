@@ -113,12 +113,12 @@ func (m *Middleware) injectScopeHeader(r *http.Request) error {
 	}
 
 	type DexClaims struct {
-		LogReaders []string `json:"tenant:logreaders"`
+		LogReaders []string `json:"tenant:logreaders,omitempty"`
 		jwt.RegisteredClaims
 	}
 
 	token, err := jwt.ParseWithClaims(tokenString, &DexClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(""), nil
+		return []byte(""), jwt.ErrTokenUnverifiable // We already verified
 	})
 	if !errors.Is(err, jwt.ErrTokenUnverifiable) {
 		m.logger.Error("token parsing error", zap.Error(err))
