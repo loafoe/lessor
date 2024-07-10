@@ -53,7 +53,7 @@ data:
                               "handler": "reverse_proxy",
                               "upstreams": [
                                 {
-                                  "dial": "{{ .Values.loki.url }}:80"
+                                  "dial": "{{ .Values.upstream.url }}:80"
                                 }
                               ]
                             }

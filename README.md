@@ -1,6 +1,6 @@
 # lessor
 
-Caddy based plugin to dynamically inject `X-Scope-OrgID` header values into Loki bound requests.
+Caddy based plugin to dynamically inject `X-Scope-OrgID` header values into Grafana components bound requests.
 
 ## Building
 
@@ -27,7 +27,7 @@ Use the included `Helm` chart to deploy. Example `values.yaml`
 ```yaml
 issuer: https://dex.hsp.hostedzonehere.com/
 
-loki:
+upstream:
   url: loki-gateway.observability.svc
   
 ingress:

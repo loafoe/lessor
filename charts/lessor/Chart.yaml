@@ -1,9 +1,9 @@
 apiVersion: v2
 name: lessor
-description: Caddy plugin to support Loki multi-tenant setups
+description: Caddy plugin to support Grafana components multi-tenant setups
 
 type: application
 
-version: 0.0.10
+version: 0.0.11
 
-appVersion: "v0.0.10"
+appVersion: "v0.0.11"
