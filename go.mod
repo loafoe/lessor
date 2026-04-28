@@ -8,7 +8,7 @@ require (
 	github.com/caddyserver/caddy/v2 v2.7.6
 	github.com/coreos/go-oidc/v3 v3.10.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
-	go.uber.org/zap v1.27.0
+	go.uber.org/zap v1.28.0
 )
 
 require (
