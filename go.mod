@@ -4,7 +4,7 @@ go 1.25.1
 
 require (
 	github.com/caddyserver/caddy/v2 v2.11.4
-	github.com/coreos/go-oidc/v3 v3.20.0
+	github.com/coreos/go-oidc/v3 v3.21.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	go.uber.org/zap v1.28.0
 )
